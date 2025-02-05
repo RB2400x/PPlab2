@@ -1,5 +1,5 @@
 from tkinter import *
-def wincheck():
+def wincheck(area):
     winner = ''
     # проверки:
     for r in range(3):
@@ -12,13 +12,12 @@ def wincheck():
     elif winner=='o': return 2
     else:
         return 0
-def off():
+def off(area):# выключение оставшихся кнопок поля при победе
     for r in range(3):
         for c in range(3):
             area[r][c].config(state="disabled")
-def handler(btn: Button):
-    global move
-    if move%2!=0:
+def handler(btn: Button, label, area, move):# обработчик для кнопок поля
+    if move[0]%2!=0:
         sign = 'x'
         turn = "Ход ноликов"
     else:
@@ -26,29 +25,41 @@ def handler(btn: Button):
         turn = "Ход крестиков"
     btn.config(text=sign, font=("Arial", 100))
     btn.config(state="disabled")
-    move += 1
-    check = wincheck()
+    move[0] += 1
+    check = wincheck(area)
     if check==1:
-        turn = "Крестики победили"
-        off()
+        turn = "Крестики\n победили"
+        off(area)
     elif check==2:
-        turn = "Нолики победили"
-        off()
-    elif check==0 and move==10:
+        turn = "Нолики\n победили"
+        off(area)
+    elif check==0 and move[0]==10:
         turn = "Ничья"
     label.config(text=turn)
-menu=Tk()
-menu.title('Крестики-нолики')
-menu.geometry('450x450')
-label = Label(menu, text="Ход крестиков", font=("Arial", 14))
-label.grid(row=0, column=0, columnspan = 3)
-for r in range(1,4): menu.rowconfigure(index = r, weight = 1)
-for c in range(3): menu.columnconfigure(index = c, weight = 1)
-move = 1
-area = [[1,2,3],[4,5,6],[7,8,9]]
-for r in range(1,4):
-    for c in range(3):
-        btn = Button(height=10, width=30, font=("Arial", 100), state='normal',command=lambda lr=r, lc=c: handler(area[lr-1][lc]))# lr - lambda r, lc - lambda c
-        btn.grid(row=r, column=c)
-        area[r-1][c]=btn
-menu.mainloop()
+def replay(area, label, move):
+    for r in range(3):
+        for c in range(3):
+            area[r][c].config(text='' ,state="normal")
+    move[0] = 1
+    label['text']="Ход крестиков" # - можно обращаться напрямую, а не делать label.config(text="Ход крестиков")
+def play():
+    game=Tk()
+    game.title('Крестики-нолики')
+    game.geometry('450x600')
+    label = Label(game, text="Ход крестиков", font=("Arial", 14))
+    label.grid(row=0, column=1)
+    for r in range(1,4): game.rowconfigure(index = r, weight = 1)
+    for c in range(3): game.columnconfigure(index = c, weight = 1)
+    move = [1]
+    area = [[1,2,3],[4,5,6],[7,8,9]]
+    for r in range(1,4):
+        for c in range(3):
+            btn = Button(height=10, width=30, font=("Arial", 100), state='normal',command=lambda lr=r, lc=c: handler(area[lr-1][lc], label, area, move))# lr - lambda r, lc - lambda c
+            btn.grid(row=r, column=c)
+            area[r-1][c]=btn
+    restart = Button(height=4, width=9, font=("Arial", 12), state='normal', text='Перезапуск', command=lambda: replay(area, label, move))
+    restart.grid(row=0, column=0, sticky=W)
+    close = Button(height=4, width=9, font=("Arial", 12), state='normal', text='Выход', command=lambda: game.destroy())
+    close.grid(row=0, column=2, sticky=E)
+    game.mainloop()
+play()
